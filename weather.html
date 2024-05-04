@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name=>
+        <title>Weather report</title>
+        <link rel="stylesheet" href="weather.css">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Weather report</h1>
+            <input type="text" id="locationInput" placeholder="Enter a city">
+            <button id="searchButton">GET WEATHER</button>
+            <h2>or</h2>
+            <button>get divice location</button>
+            <div class="weather-info">
+                <h2 id="location"></h2>
+                <p id="temperature"></p>
+                <p id="description"></p>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var searchButton = document.getElementById("searchButton");
+                var locationInput = document.getElementById("locationInput");
+                var locationInfo = document.getElementById("location");
+                
+                searchButton.addEventListener("click", function() {
+                    var cityName = locationInput.value.trim();
+                    if(cityName === '') {
+                        alert('Please enter a city name or allow access to your current location.');
+                        return;
+                    }
+                    getWeather(cityName);
+                });
+                
+                // Get weather information based on user's current location
+                function getLocationWeather() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var latitude = position.coords.latitude;
+                            var longitude = position.coords.longitude;
+                            // var apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=YOUR_API_KEY`;
+
+                            var apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=d22f84a43ea0cbb125739b985c56e227`
+
+                            fetch(apiUrl)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    displayWeatherData(data);
+                                })
+                                .catch(error => {
+                                    console.error('There was a problem with the fetch operation:', error);
+                                    alert('Unable to fetch weather data. Please try again later.');
+                                });
+                        });
+                    } else {
+                        alert("Geolocation is not supported by this browser.");
+                    }
+                }
+                
+                // Get weather information based on user's input city name
+                function getWeather(cityName) {
+                    var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=d22f84a43ea0cbb125739b985c56e227`;
+
+                    fetch(apiUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            displayWeatherData(data);
+                        })
+                        .catch(error => {
+                            console.error('There was a problem with the fetch operation:', error);
+                            alert('Unable to fetch weather data. Please try again later.');
+                        });
+                }
+
+                // Display weather data on the webpage
+                function displayWeatherData(data) {
+                    locationInfo.textContent = data.name;
+                    var temperature = Math.round(data.main.temp - 273.15); // Convert temperature from Kelvin to Celsius
+                    document.getElementById('temperature').textContent = 'Temperature: ' + temperature + '°C';
+                    document.getElementById('description').textContent = 'Description: ' + data.weather[0].description;
+                }
+
+                // Call getLocationWeather() to get weather based on user's current location by default
+                getLocationWeather();
+            });
+        </script>
+    </body>
+</html>
